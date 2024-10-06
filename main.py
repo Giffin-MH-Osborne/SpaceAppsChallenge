@@ -26,7 +26,6 @@ activity_detected = 0
 
 row = 0
 # #value used to iterate through result dataframe
-
 data = pd.DataFrame(columns=['avg_chunk_accel', 'label'])
 #initialize result dataframe
 
@@ -59,7 +58,7 @@ def normalize_data(cleaned_df: pd.DataFrame):
     return normalized_df
 
 def avg_velocity(spikes: np.ndarray, df: pd.DataFrame, predicting: bool):
-    global activity_detected, row
+    global activity_detected, row, data
     index = 0
     counter = 0
     if(not predicting):
@@ -104,39 +103,51 @@ def process_data(i: int, filename: str, predicting: bool):
         return
 
 def stack(predictions: list):
-    print(np.column_stack(predictions))
+    print(len(predictions[0]))
+    print((predictions[1]))
 
 def predict():
-    global predictions
-    global actual
+    global predictions, actual, row
     temp_predictions = []
     bag_clf = BaggingClassifier(estimator=RandomForestClassifier(),random_state=123)
     X = pd.DataFrame(data['avg_chunk_accel'])
     y = data['label']
     fitted_clf = bag_clf.fit(X, y)
-
-    index = 0
-    for file in train_files:
+    temp = 0
+    row = 0
+    print('row reset')
+    for file in test_files:
+        index = 0 
+        print('processing testing file: ' + file)
         process_data(index, file, True)
+        print('length: ' + str(len(data['avg_chunk_accel'])))
+        print(data)
+        print('processed')
         X = pd.DataFrame(data['avg_chunk_accel'])
         y = data['label']
         prediction = fitted_clf.predict(X)
         temp_predictions.append(prediction)
         actual.append(y)
         index += 1
-        if i==3:
+        temp+=1
+        print('done')
+        if temp==2:
             break
     predictions.append(np.concatenate(temp_predictions))
+    print('done predictions\n')
 
 
 if __name__ == "__main__":
         i = 0
         train_test()
-        print(len(test_files))
         # loop over every file in the catalog
         for filename in train_files:
+            print('processing training: ' + filename)
             process_data(i, filename, False)
+            print(data)
+            print('processed\n')
             
+            print('beginning prediction')
             predict()
             if i == 1:
                     break
