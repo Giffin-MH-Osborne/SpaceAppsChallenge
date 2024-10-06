@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.ensemble import IsolationForest, BaggingClassifier, RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 
 
@@ -23,6 +24,9 @@ LABEL = 1
 #GLOBAL VARIABLES
 activity_detected = 0
 #timestamp where there is seismic activity
+
+labels = []
+#labels for LogisticRegression
 
 row = 0
 # #value used to iterate through result dataframe
@@ -103,20 +107,20 @@ def process_data(i: int, filename: str, predicting: bool):
         return
 
 def stack(predictions: list):
-    print(len(predictions[0]))
-    print((predictions[1]))
+    return np.column_stack(predictions)
 
 def predict():
-    global predictions, actual, row
+    global predictions, actual, row, data
     temp_predictions = []
     bag_clf = BaggingClassifier(estimator=RandomForestClassifier(),random_state=123)
     X = pd.DataFrame(data['avg_chunk_accel'])
     y = data['label']
     fitted_clf = bag_clf.fit(X, y)
-    temp = 0
-    row = 0
-    print('row reset')
+      
     for file in test_files:
+        row = 0
+        data = pd.DataFrame(columns=['avg_chunk_accel', 'label'])
+        print('row and dataframe reset')
         index = 0 
         print('processing testing file: ' + file)
         process_data(index, file, True)
@@ -128,11 +132,8 @@ def predict():
         prediction = fitted_clf.predict(X)
         temp_predictions.append(prediction)
         actual.append(y)
-        index += 1
-        temp+=1
+        index += 1 
         print('done')
-        if temp==2:
-            break
     predictions.append(np.concatenate(temp_predictions))
     print('done predictions\n')
 
@@ -149,7 +150,9 @@ if __name__ == "__main__":
             
             print('beginning prediction')
             predict()
-            if i == 1:
+            if i == 2:
                     break
             i+= 1
-        stack(predictions)
+        stacked_preds = stack(predictions)
+
+        
