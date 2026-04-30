@@ -35,7 +35,7 @@ def normalize_data(df: pd.DataFrame):
     df["velocity(m/s)"] = (df["velocity(m/s)"] - np.average(df["velocity(m/s)"]))/(df["velocity(m/s)"].max() - df["velocity(m/s)"].min())
     return df
 
-def fuck(df: pd.DataFrame):
+def set_expectation(df: pd.DataFrame):
     global time_slice_size
     std_dev = np.std(df["velocity(m/s)"])
     expected_range = 3*std_dev
